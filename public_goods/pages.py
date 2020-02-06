@@ -12,11 +12,13 @@ class SeparationWaitPage(WaitPage):
 class Introduction(Page):
     """Description of the game: How to play and returns expected"""
 
-    def vars_for_template(self) -> dict:
-        w_poor = Constants.working_endowment,
-        w_rich = Constants.working_endowment * 2,
-        e_poor = Constants.external_endowment,
-        e_rich = Constants.external_endowment * 2,
+    def vars_for_template(self):
+        return dict(
+            w_poor=Constants.working_endowment,
+            w_rich=Constants.working_endowment * 2,
+            e_poor=Constants.external_endowment,
+            e_rich=Constants.external_endowment * 2,
+        )
 
     pass
 
@@ -28,7 +30,7 @@ class Contribute(Page):
     form_fields = ['contribution']
 
     def vars_for_template(self):
-        endowment = Constants.working_endowment * self.player.is_rich
+        endowment = Constants.working_endowment.__mul__(self.player.is_rich)
         return dict(
             contribution_label='How much do you want to contribute(from 0 to {})?'.format(endowment),
             w_poor=Constants.working_endowment,
@@ -47,11 +49,13 @@ class ResultsWaitPage(WaitPage):
 class Results(Page):
     """Players payoff: How much each has earned"""
 
-    def vars_for_template(self) -> dict:
-        w_poor = Constants.working_endowment,
-        w_rich = Constants.working_endowment * 2,
-        e_poor = Constants.external_endowment,
-        e_rich = Constants.external_endowment * 2,
+    def vars_for_template(self):
+        return dict(
+            w_poor=Constants.working_endowment,
+            w_rich=Constants.working_endowment * 2,
+            e_poor=Constants.external_endowment,
+            e_rich=Constants.external_endowment * 2,
+        )
 
 
 page_sequence = [SeparationWaitPage, Introduction, Contribute, ResultsWaitPage, Results]

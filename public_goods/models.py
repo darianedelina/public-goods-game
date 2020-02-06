@@ -9,7 +9,6 @@ from otree.api import (
     currency_range,
 )
 
-
 doc = """
 This is a one-period public goods game with 3 players.
 """
@@ -72,7 +71,7 @@ class Group(BaseGroup):
     def separation(self):
         i = 1
         for p in self.get_players():
-            p.is_rich = 2 - i%2
+            p.is_rich = 2 - (i % 2)
             i += 1
 
 

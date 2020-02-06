@@ -8,22 +8,35 @@
 
     <p>
         In this study, you will be in a randomly formed group
+        of {{ Constants.players_per_group }} participants.
+        Each participant in the group has working endowment from which you will contribute to
+        the project and external endowment which will be saved if you win and loss if you lose.
+        Now you will play
+        {% if player.is_rich == 2 %}
+           <strong>rich</strong> role which means you have working endowment = {{ w_rich }}
+        and external endowment {{ e_rich }}.
+        {% else %}
+           <strong>poor</strong> role which means you have working endowment = {{ w_poor }} and external endowment {{ e_poor }}.
+        {% endif %}
+        The group has the opportunity to reach the threshold, which is <strong>{{Constants.threshold}}</strong>.
+
+        {% comment %}
+        In this study, you will be in a randomly formed group
         of {{ Constants.players_per_group }} participants. Each participant in
-        the group is given {{ Constants.endowment }}. The group
-        has the opportunity to undertake a joint project. Each participant in
+        the group is rich or poor and has working endowment {{ w_rich }}
+        or {{ w_poor }} respectively. Every member also has external endowment {{ e_rich }}
+        or {{ e_poor }} respectively. The group
+        has the opportunity to reach the threshold, which is {{Constants.threshold}}. Each participant in
         the group decides how much she or he is going to contribute to
-        the project. Contribution could be any integer from 0
-        to {{ Constants.endowment }}.
+        the project from his or her working endowment.
+        {% endcomment %}
     </p>
     <p>
-        The earnings from the project are calculated as follows: The
-        contributions of all {{ Constants.players_per_group }} participants are
-        added up, the total contribution
-        is multiplied by a factor of {{ Constants.multiplier }}, and the
-        resulting amount is the total earnings from the project, which is
-        evenly split among all {{ Constants.players_per_group }}
-        participants. Your payoff equals your earnings from the project, plus
-        the amount you did not contribute.
+        The earnings from the project are calculated as follows:
+        If the group has reached the threshold, every member will save his external endowment.
+        Otherwise each participant will lose external endowment with probability {{Constants.probability_of_loss}}.
+        Your payoff equals your saved external endowment, plus
+        the amount from working endowment you did not contribute.
     </p>
     </div>
 </div>
