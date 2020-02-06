@@ -17,14 +17,16 @@ This is a one-period public goods game with 3 players.
 
 class Constants(BaseConstants):
     name_in_url = 'public_goods'
-    players_per_group = 3
+    players_per_group = 2
     num_rounds = 1
 
     instructions_template = 'public_goods/instructions.html'
 
     # """Amount allocated to each player"""
-    endowment = c(100)
-    multiplier = 2
+    working_endowment = c(100)
+    external_endowment = c(200)
+    threshold = c(200)
+    probability_of_loss = 0.8
 
 
 class Subsession(BaseSubsession):
@@ -48,19 +50,34 @@ class Subsession(BaseSubsession):
 
 class Group(BaseGroup):
     total_contribution = models.CurrencyField()
-
     individual_share = models.CurrencyField()
+    loss = models.IntegerField(initial=0)
+    random = models.FloatField()
 
     def set_payoffs(self):
+        import random
+        self.random = random.random()
+        if self.random > Constants.probability_of_loss:
+            self.loss = 1
         self.total_contribution = sum([p.contribution for p in self.get_players()])
-        self.individual_share = (
-            self.total_contribution * Constants.multiplier / Constants.players_per_group
-        )
+        if self.total_contribution >= Constants.threshold:
+            for p in self.get_players():
+                p.payoff = (Constants.working_endowment * p.is_rich - p.contribution) \
+                           + Constants.external_endowment * p.is_rich
+        else:
+            for p in self.get_players():
+                p.payoff = (Constants.working_endowment * p.is_rich - p.contribution) \
+                           + self.loss * Constants.external_endowment * p.is_rich
+
+    def separation(self):
+        i = 1
         for p in self.get_players():
-            p.payoff = (Constants.endowment - p.contribution) + self.individual_share
+            p.is_rich = 2 - i%2
+            i += 1
 
 
 class Player(BasePlayer):
     contribution = models.CurrencyField(
-        min=0, max=Constants.endowment, doc="""The amount contributed by the player"""
+        min=0, max=Constants.working_endowment, doc="""The amount contributed by the player"""
     )
+    is_rich = models.IntegerField
