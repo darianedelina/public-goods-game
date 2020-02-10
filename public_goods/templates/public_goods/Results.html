@@ -2,34 +2,24 @@
 {% load otree %}
 
 {% block title %}
-    Results
+    Результаты
 {% endblock %}
 
 {% block content %}
   
 
     <table class="table-condensed" style="width:500px; margin-top:20px;">
-    <tr><td>You contributed:</td><td>{{ player.contribution }}</td></tr>
-    <tr><td>Other participants contributed:</td><td></td></tr>
-    {% for p in player.get_others_in_group %}
-        <tr><td></td><td>{{ p.contribution }}</td></tr>
-    {% endfor %}
+        <tr><td>Вы вложили:</td><td>{{ player.contribution }}</td></tr>
+        
+        <tr><td>Общий вклад:</td><td>{{ group.total_contribution }}</td></tr>
 
-    <tr><td>Total contribution:</td><td>{{ group.total_contribution }}</td></tr>
-    <tr><td>Threshold:</td><td>{{ Constants.threshold }}</td></tr>
+        <tr><td colspan="2"><hr/></td></tr>
 
-    {% if group.total_contribution >= Constants.threshold %}
-        <tr><td>Congratulations, you won!</td></tr>
-    {% else %}
-        <tr><td>Sorry, but you lose.</td></tr>
-        <tr><td>With probability {{Constants.probability_of_loss}} the game has chosen multiplier =
-        </td><td>{{group.loss}}</td></tr>
-        <tr><td>Random = {{group.random}}.</td></tr>
-    {% endif %}
+        <tr><td>Ваша прибыль от проекта:</td><td>{{ group.individual_share }}</td></tr>
 
-    <tr><td colspan="2"><hr/></td></tr>
+        <tr><td colspan="2"><hr/></td></tr>
 
-    <tr><td>Thus in total you earned:</td><td>{{ player.payoff }}</td></tr>
+        <tr><td>Вы заработали:</td><td>{{ player.payoff }}</td></tr>
 
     </table>
     <p></p>

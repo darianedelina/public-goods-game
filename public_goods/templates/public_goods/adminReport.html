@@ -1,0 +1,46 @@
+<h3> Общее благо </h3>
+
+<table class="table">
+    <thead>
+        <tr>
+    {% for num in round_numbers %}
+                <th>{{ num }}</th>
+    {% endfor %}
+        </tr>
+    </thead>
+     <tbody> 
+      <tr>
+            {% for dat in period_data %}
+                <td>{{ dat }}</td>
+            {% endfor %}
+      </tr>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+    {% for dat_lb in game_data.0 %}
+                <th>{{ dat_lb }}</th>
+    {% endfor %}
+        </tr>
+    </thead>
+     <tbody> 
+    {% for field in game_data %}
+
+        {% if field.ID == 0 %} 
+            <tr style="background-color: #666666;color: #ffffff;">
+                {% for dat in field.values %}
+                    <td>{{ dat }}</td>
+                {% endfor %}
+            </tr>
+        {% else %}
+            <tr>
+                {% for dat in field.values %}
+                    <td>{{ dat }}</td>
+                {% endfor %}
+            </tr>
+        {% endif %}
+
+        
+    {% endfor %}
+</table>

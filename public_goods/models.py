@@ -1,3 +1,4 @@
+# import self
 from otree.api import (
     models,
     widgets,
@@ -8,6 +9,7 @@ from otree.api import (
     Currency as c,
     currency_range,
 )
+import random
 
 doc = """
 This is a one-period public goods game with 3 players.
@@ -20,63 +22,146 @@ class Constants(BaseConstants):
     num_rounds = 1
 
     instructions_template = 'public_goods/instructions.html'
+    totalResult_template = 'public_goods/adminReport.html'
 
-    # """Amount allocated to each player"""
-    working_endowment = c(100)
-    external_endowment = c(200)
+    rich_working_endowment = c(200)
+    poor_working_endowment = c(100)
+
+    rich_external_endowment = c(400)
+    poor_external_endowment = c(200)
+
     threshold = c(200)
     probability_of_loss = 0.8
 
 
 class Subsession(BaseSubsession):
+    def get_active_players(self):
+        return [p for p in self.get_players() if p.is_alive()]
+
+    def do_my_shuffle(self):
+        newlist = [p for p in self.get_players() if p.is_alive()]
+        leftlist = [p for p in self.get_players() if not p.is_alive()]
+        pcount = len(newlist)
+        num_to_add = Constants.players_per_group - pcount % Constants.players_per_group
+        if num_to_add < Constants.players_per_group:
+            newlist += leftlist[:num_to_add]
+            leftlist = leftlist[num_to_add:]
+            pcount = len(newlist)
+        nums = random.SystemRandom().sample(range(pcount), pcount)
+        shufflelist = [newlist[i] for i in nums] + leftlist
+        gr_matrix = [shufflelist[i:i + Constants.players_per_group] for i in
+                     range(0, len(shufflelist), Constants.players_per_group)]
+        self.set_group_matrix(gr_matrix)
+        for p in self.get_players():
+
+            # if p.role() == 'rich':
+            #     p = RichPlayer(p)
+            # else:
+            #     p = PoorPlayer(p)
+
+            p.set_working_endowment()
+            p.set_external_endowment()
+
     def vars_for_admin_report(self):
-        contributions = [
-            p.contribution for p in self.get_players() if p.contribution != None
-        ]
-        if contributions:
-            return dict(
-                avg_contribution=sum(contributions) / len(contributions),
-                min_contribution=min(contributions),
-                max_contribution=max(contributions),
-            )
-        else:
-            return dict(
-                avg_contribution='(no data)',
-                min_contribution='(no data)',
-                max_contribution='(no data)',
-            )
+        # subs_avg = []
+        # for subs in self.in_all_rounds():
+        #     pl_contribution = sum(p.contribution for p in subs.get_players()) / len(subs.get_players())
+        #     pl_coop_num = sum(p.decision == "Cooperate" for p in subs.get_players())
+        #     pl_defect_num = sum(p.decision == "Defect" for p in subs.get_players())
+        #     subs_avg.append(round(100*pl_coop_num/(pl_coop_num+pl_defect_num),1) if pl_coop_num+pl_defect_num>0 else float('nan'))
+        #     subs_avg.append(round(pl_contribution, 1))
+        #
+        # series = []
+        # for player in self.get_players():
+        #     pl_id = player.participant.id_in_session
+        #     name = player.participant.label
+        #     pl_totalpay = sum(p.payoff for p in player.in_all_rounds())
+        #     pl_contribution = sum(p.contribution for p in player.in_all_rounds()) / len(player.in_all_rounds())
+        #     pl_total_contribution = sum(p.group.total_contribution for p in player.in_all_rounds()) / len(
+        #         player.in_all_rounds())
+        #     pl_individual_share = sum(p.group.individual_share for p in player.in_all_rounds()) / len(
+        #         player.in_all_rounds())
+        #
+        #     series.append(dict(ID=pl_id, Name=name, TotalPay=pl_totalpay, Contribution=pl_contribution,
+        #                        TotalContribution=pl_total_contribution, IndividualShare=pl_individual_share))
+        # cnt = len(series)
+        # if cnt > 0:
+        #     av = dict(ID=0, Name='AVG', TotalPay=round(sum(s['TotalPay'] for s in series) / cnt, 0),
+        #               Contribution=round(sum(s['Contribution'] for s in series) / cnt, 1),
+        #               TotalUnits=round(sum(s['TotalContribution'] for s in series) / cnt, 1),
+        #               IndividualShare=round(sum(s['IndividualShare'] for s in series) / cnt, 1))
+        #     series.insert(0, av)
+        #
+        # return dict(game_data=series, period_data=subs_avg, round_numbers=list(range(1, len(subs_avg) + 1)))
+
+        return dict()
 
 
 class Group(BaseGroup):
-    total_contribution = models.CurrencyField()
-    individual_share = models.CurrencyField()
+    total_contribution = models.CurrencyField(default=0)
+    individual_share = models.IntegerField(default=0)
     loss = models.IntegerField(initial=0)
-    random = models.FloatField()
+    random = models.FloatField(initial=0)
 
     def set_payoffs(self):
-        import random
         self.random = random.random()
         if self.random > Constants.probability_of_loss:
             self.loss = 1
         self.total_contribution = sum([p.contribution for p in self.get_players()])
         if self.total_contribution >= Constants.threshold:
             for p in self.get_players():
-                p.payoff = (Constants.working_endowment * p.is_rich - p.contribution) \
-                           + Constants.external_endowment * p.is_rich
+                p.payoff = (p.working_endowment - p.contribution) + p.external_endowment
         else:
             for p in self.get_players():
-                p.payoff = (Constants.working_endowment * p.is_rich - p.contribution) \
-                           + self.loss * Constants.external_endowment * p.is_rich
-
-    def separation(self):
-        i = 1
-        for p in self.get_players():
-            p.is_rich = 2 - (i % 2)
-            i += 1
+                p.payoff = (p.working_endowment - p.contribution) + self.loss * p.external_endowment
 
 
 class Player(BasePlayer):
+    working_endowment = models.CurrencyField(default=0)
+    external_endowment = models.CurrencyField(default=0)
     contribution = models.CurrencyField(
-        min=0, max=Constants.working_endowment, doc="""The amount contributed by the player"""
+        min=0,
+        doc="""The amount contributed by the player""",
+        default=0
     )
-    is_rich = models.IntegerField
+
+    def contribution_max(self):
+        return self.working_endowment
+
+    def is_alive(self):
+        return not ((self.participant.label is None) or (self.participant.label == ""))
+
+    def role(self):
+        return {0: 'rich', 1: 'poor'}[self.id_in_group%2]
+
+    # @working_endowment.setter
+    def set_working_endowment(self):
+        if self.role() == 'rich':
+            self.working_endowment = Constants.rich_working_endowment
+        else:
+            self.working_endowment = Constants.poor_working_endowment
+
+    # @external_endowment.setter
+    def set_external_endowment(self):
+        if self.role() == 'rich':
+            self.external_endowment = Constants.rich_external_endowment
+        else:
+            self.external_endowment = Constants.poor_external_endowment
+
+
+# class RichPlayer(Player):
+#     contribution = models.CurrencyField(
+#         min=0,
+#         max=Constants.rich_working_endowment,
+#         doc="""The amount contributed by the player""",
+#         default=0
+#     )
+#
+#
+# class PoorPlayer(Player):
+#     contribution = models.CurrencyField(
+#         min=0,
+#         max=Constants.poor_working_endowment,
+#         doc="""The amount contributed by the player""",
+#         default=0
+#     )
