@@ -3,12 +3,16 @@
 <table class="table">
     <thead>
         <tr>
-    {% for num in round_numbers %}
-                <th>{{ num }}</th>
-    {% endfor %}
+            {% for num in round_numbers %}
+                {% if num == 0 %}
+                    <th>round</th>
+                {% else %}
+                    <th>{{ num }}</th>
+                {% endif %}
+            {% endfor %}
         </tr>
     </thead>
-     <tbody> 
+     <tbody>
       <tr>
             {% for dat in period_data %}
                 <td>{{ dat }}</td>
@@ -19,28 +23,27 @@
 <table class="table">
     <thead>
         <tr>
-    {% for dat_lb in game_data.0 %}
+            {% for dat_lb in game_data.0 %}
                 <th>{{ dat_lb }}</th>
-    {% endfor %}
+            {% endfor %}
         </tr>
     </thead>
-     <tbody> 
-    {% for field in game_data %}
+     <tbody>
+        {% for field in game_data %}
 
-        {% if field.ID == 0 %} 
+            {% if field.PlayerID == 0 %}
             <tr style="background-color: #666666;color: #ffffff;">
                 {% for dat in field.values %}
                     <td>{{ dat }}</td>
                 {% endfor %}
             </tr>
-        {% else %}
+            {% else %}
             <tr>
                 {% for dat in field.values %}
                     <td>{{ dat }}</td>
                 {% endfor %}
             </tr>
-        {% endif %}
+            {% endif %}
 
-        
-    {% endfor %}
+        {% endfor %}
 </table>

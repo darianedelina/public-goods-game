@@ -46,9 +46,6 @@ class Contribute(Page):
     form_model = 'player'
     form_fields = ['contribution']
 
-    def is_enabled(self):
-        return True
-
     def vars_for_template(self):
         return dict(
             contribution_label='Сколько Вы готовы вложить в общий проект (от 0 до {})?'.format(
@@ -70,9 +67,6 @@ class ResultsWaitPage(WaitPage):
 class Results(Page):
     """This page displays the earnings of each player"""
 
-    def is_enabled(self):
-        return True
-
 
 class TotalResult(Page):
     def vars_for_template(self):
@@ -84,9 +78,9 @@ class TotalResult(Page):
 
 page_sequence = [
     StartWaitPage,
-    Introduction,
+    # Introduction,
     Contribute,
     ResultsWaitPage,
     Results,
-    # TotalResult
+    TotalResult
 ]
