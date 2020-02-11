@@ -33,14 +33,14 @@ class StartWaitPage(WaitPage):
         self.subsession.do_my_shuffle()
 
 
-class Introduction(PageWithBot):
+class Introduction(Page):
     is_first_round_show = True
 
     def is_enabled(self):
         return self.round_number == 1
 
 
-class Contribute(PageWithBot):
+class Contribute(Page):
     """Player: Choose how much to contribute"""
 
     form_model = 'player'
@@ -67,7 +67,7 @@ class ResultsWaitPage(WaitPage):
     body_text = "Ожидайте пока Ваш оппонент примет решение."
 
 
-class Results(PageWithBot):
+class Results(Page):
     """This page displays the earnings of each player"""
 
     def is_enabled(self):

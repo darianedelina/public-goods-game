@@ -1,0 +1,42 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+    Результаты
+{% endblock %}
+
+{% block content %}
+  
+
+    <table class="table-condensed" style="width:500px; margin-top:20px;">
+        <tr><td>Вы вложили:</td><td>{{ player.contribution }}</td></tr>
+        
+        <tr><td>Общий вклад:</td><td>{{ group.total_contribution }}</td></tr>
+
+        <tr><td colspan="2"><hr/></td></tr>
+
+        <tr><td>Порог:</td><td>{{ Constants.threshold }}</td></tr>
+
+        {% if group.total_contribution >= Constants.threshold %}
+            <tr><td>Поздравляю, вы выиграли!</td></tr>
+        {% else %}
+            <tr><td>К сожалению, вы проиграли.</td></tr>
+            <tr><td>С вероятностью {{Constants.probability_of_loss}} игрой был выбран множитель =
+            </td><td>{{group.loss}}</td></tr>
+            <tr><td>Рандом = {{group.random}}.</td></tr>
+        {% endif %}
+
+        <tr><td colspan="2"><hr/></td></tr>
+
+        <tr><td>Итого, ваш выигрыш:</td><td>{{ player.payoff }}</td></tr>
+
+    </table>
+    <p></p>
+
+    {% next_button %}
+
+
+    {% include Constants.instructions_template %}
+
+
+{% endblock %}

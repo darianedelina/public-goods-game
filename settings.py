@@ -12,10 +12,10 @@ SESSION_CONFIG_DEFAULTS = dict(
 
 SESSION_CONFIGS = [
     dict(
-        name='public_goods',
+        name='public_goods_rich',
         display_name="Игра с общим благом для богатых и бедных",
         num_demo_participants=2,
-        app_sequence=['survey', 'public_goods'],
+        app_sequence=['public_goods_rich'],
     ),
 ]
 

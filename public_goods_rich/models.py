@@ -17,12 +17,12 @@ This is a one-period public goods game with 3 players.
 
 
 class Constants(BaseConstants):
-    name_in_url = 'public_goods'
+    name_in_url = 'public_goods_rich'
     players_per_group = 2
     num_rounds = 1
 
-    instructions_template = 'public_goods/instructions.html'
-    totalResult_template = 'public_goods/adminReport.html'
+    instructions_template = 'public_goods_rich/instructions.html'
+    totalResult_template = 'public_goods_rich/adminReport.html'
 
     rich_working_endowment = c(200)
     poor_working_endowment = c(100)
