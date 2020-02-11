@@ -89,7 +89,7 @@ class Subsession(BaseSubsession):
         return dict(
             game_data=series,
             period_data=subsession_avg,
-            round_numbers=list(range(0, Constants.num_rounds + 1)))
+            round_numbers=list(range(0, len(subsession_avg) + 1)))
 
 
 class Group(BaseGroup):

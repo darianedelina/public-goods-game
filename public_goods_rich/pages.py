@@ -33,14 +33,14 @@ class StartWaitPage(WaitPage):
         self.subsession.do_my_shuffle()
 
 
-class Introduction(Page):
+class Introduction(PageWithBot):
     is_first_round_show = True
 
     def is_enabled(self):
         return self.round_number == 1
 
 
-class Contribute(Page):
+class Contribute(PageWithBot):
     """Player: Choose how much to contribute"""
 
     form_model = 'player'
@@ -64,11 +64,11 @@ class ResultsWaitPage(WaitPage):
     body_text = "Ожидайте пока Ваш оппонент примет решение."
 
 
-class Results(Page):
+class Results(PageWithBot):
     """This page displays the earnings of each player"""
 
 
-class TotalResult(Page):
+class TotalResult(PageWithBot):
     def vars_for_template(self):
         return self.subsession.vars_for_admin_report()
 
@@ -78,7 +78,7 @@ class TotalResult(Page):
 
 page_sequence = [
     StartWaitPage,
-    # Introduction,
+    Introduction,
     Contribute,
     ResultsWaitPage,
     Results,
