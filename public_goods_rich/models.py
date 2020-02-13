@@ -87,9 +87,9 @@ class Subsession(BaseSubsession):
             series.insert(0, av)
 
         return dict(
-            game_data=series,
             period_data=subsession_avg,
-            round_numbers=list(range(0, len(subsession_avg) + 1)))
+            game_data=series,
+            round_numbers=list(range(0, len(subsession_avg))))
 
 
 class Group(BaseGroup):
@@ -141,20 +141,3 @@ class Player(BasePlayer):
             self.external_endowment = Constants.rich_external_endowment
         else:
             self.external_endowment = Constants.poor_external_endowment
-
-# class RichPlayer(Player):
-#     contribution = models.CurrencyField(
-#         min=0,
-#         max=Constants.rich_working_endowment,
-#         doc="""The amount contributed by the player""",
-#         default=0
-#     )
-#
-#
-# class PoorPlayer(Player):
-#     contribution = models.CurrencyField(
-#         min=0,
-#         max=Constants.poor_working_endowment,
-#         doc="""The amount contributed by the player""",
-#         default=0
-#     )

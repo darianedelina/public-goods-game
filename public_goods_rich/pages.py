@@ -1,5 +1,7 @@
 from ._builtin import Page, WaitPage
 from .models import Constants
+from otree.api import Currency as c
+import random
 
 
 class PageWithBot(Page):
@@ -14,7 +16,10 @@ class PageWithBot(Page):
         return True
 
     def set_bot_decision(self):
-        pass
+        self.player.contribution = random.sample(
+            [c(0), c(50), self.player.working_endowment],
+            1
+        )[0]
 
     def is_displayed(self):
         if not self.is_enabled():
@@ -29,6 +34,9 @@ class PageWithBot(Page):
 class StartWaitPage(WaitPage):
     wait_for_all_groups = True
 
+    title_text = "Пожалуйста, подождите"
+    body_text = "Ожидайте пока Ваш оппонент примет решение."
+
     def after_all_players_arrive(self):
         self.subsession.do_my_shuffle()
 
@@ -38,6 +46,11 @@ class Introduction(PageWithBot):
 
     def is_enabled(self):
         return self.round_number == 1
+
+    def vars_for_template(self) -> dict:
+        return dict(
+            probability_of_win = round(1 - Constants.probability_of_loss, 1)
+        )
 
 
 class Contribute(PageWithBot):
@@ -50,6 +63,7 @@ class Contribute(PageWithBot):
         return dict(
             contribution_label='Сколько Вы готовы вложить в общий проект (от 0 до {})?'.format(
                 self.player.working_endowment),
+            probability_of_win = round(1 - Constants.probability_of_loss, 1)
         )
 
 
@@ -66,6 +80,10 @@ class ResultsWaitPage(WaitPage):
 
 class Results(PageWithBot):
     """This page displays the earnings of each player"""
+    def vars_for_template(self):
+        return dict(
+            probability_of_win = round(1 - Constants.probability_of_loss, 1)
+        )
 
 
 class TotalResult(PageWithBot):
