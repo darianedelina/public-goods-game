@@ -14,7 +14,12 @@
     </thead>
      <tbody>
       <tr>
-            {% for dat in period_data %}
+            {% for dat in poor_data %}
+                <td>{{ dat }}</td>
+            {% endfor %}
+      </tr>
+      <tr>
+            {% for dat in rich_data %}
                 <td>{{ dat }}</td>
             {% endfor %}
       </tr>

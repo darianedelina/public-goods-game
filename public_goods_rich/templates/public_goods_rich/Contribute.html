@@ -7,6 +7,15 @@
 
 {% block content %}
 
+    <p>
+        Ваша роль:
+        {% if player.role == 'rich' %}
+            <strong>богатый</strong>
+        {% else %}
+            <strong>бедный</strong>
+        {% endif %}
+    </p>
+
     {% formfield player.contribution label=contribution_label %}
 
     {% next_button %}

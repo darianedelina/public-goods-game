@@ -16,10 +16,7 @@ class PageWithBot(Page):
         return True
 
     def set_bot_decision(self):
-        self.player.contribution = random.sample(
-            [c(0), c(50), self.player.working_endowment],
-            1
-        )[0]
+        pass
 
     def is_displayed(self):
         if not self.is_enabled():
@@ -47,11 +44,6 @@ class Introduction(PageWithBot):
     def is_enabled(self):
         return self.round_number == 1
 
-    def vars_for_template(self) -> dict:
-        return dict(
-            probability_of_win = round(1 - Constants.probability_of_loss, 1)
-        )
-
 
 class Contribute(PageWithBot):
     """Player: Choose how much to contribute"""
@@ -62,9 +54,11 @@ class Contribute(PageWithBot):
     def vars_for_template(self):
         return dict(
             contribution_label='Сколько Вы готовы вложить в общий проект (от 0 до {})?'.format(
-                self.player.working_endowment),
-            probability_of_win = round(1 - Constants.probability_of_loss, 1)
+                self.player.working_endowment)
         )
+
+    def set_bot_decision(self):
+        self.player.contribution = random.choice([c(0), c(50), self.player.working_endowment])
 
 
 class ResultsWaitPage(WaitPage):
@@ -80,10 +74,14 @@ class ResultsWaitPage(WaitPage):
 
 class Results(PageWithBot):
     """This page displays the earnings of each player"""
-    def vars_for_template(self):
-        return dict(
-            probability_of_win = round(1 - Constants.probability_of_loss, 1)
-        )
+
+
+class ShuffleWaitPage(WaitPage):
+    def after_all_players_arrive(self):
+        self.subsession.do_my_shuffle()
+
+    title_text = "Пожалуйста, подождите"
+    body_text = "Ожидайте пока Ваш оппонент примет решение."
 
 
 class TotalResult(PageWithBot):
@@ -100,5 +98,6 @@ page_sequence = [
     Contribute,
     ResultsWaitPage,
     Results,
+    ShuffleWaitPage,
     TotalResult
 ]

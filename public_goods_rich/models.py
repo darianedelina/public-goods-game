@@ -32,11 +32,23 @@ class Constants(BaseConstants):
 
     threshold = c(200)
     probability_of_loss = 0.8
+    probability_of_win = round(1 - probability_of_loss, 1)
 
 
 class Subsession(BaseSubsession):
     def get_active_players(self):
         return [p for p in self.get_players() if p.is_alive()]
+
+    def get_rich_players(self):
+        return [p for p in self.get_players() if p.role() == 'rich']
+
+    def get_poor_players(self) -> list:
+        return [p for p in self.get_players() if p.role() == 'poor']
+
+    def set_all_endowments(self):
+        for p in self.get_players():
+            p.set_working_endowment()
+            p.set_external_endowment()
 
     def do_my_shuffle(self):
         newlist = [p for p in self.get_players() if p.is_alive()]
@@ -52,44 +64,57 @@ class Subsession(BaseSubsession):
         gr_matrix = [shufflelist[i:i + Constants.players_per_group] for i in
                      range(0, len(shufflelist), Constants.players_per_group)]
         self.set_group_matrix(gr_matrix)
-        for p in self.get_players():
-            p.set_working_endowment()
-            p.set_external_endowment()
+        self.set_all_endowments()
 
     def vars_for_admin_report(self):
-        subsession_avg = []
-        subsession_avg.append('contribution_avg_by_pl')
+        subsession_poor_avg = ['contribution_avg_by_poor']
+        subs: Subsession
         for subs in self.in_all_rounds():
-            avg_player_contribution = sum(p.contribution for p in subs.get_players()) / len(subs.get_players())
-            subsession_avg.append(round(avg_player_contribution, 1))
+            avg_player_contribution = sum(p.contribution for p in subs.get_poor_players())/len(subs.get_poor_players())
+            subsession_poor_avg.append(round(avg_player_contribution, 1))
+
+        subsession_rich_avg = ['contribution_avg_by_rich']
+        subs: Subsession
+        for subs in self.in_all_rounds():
+            avg_player_contribution = sum(p.contribution for p in subs.get_rich_players())/len(subs.get_rich_players())
+            subsession_rich_avg.append(round(avg_player_contribution, 1))
 
         series = []
         for player in self.get_players():
             player_id = player.participant.id_in_session
             player_name = player.participant.label
             player_total_pay = sum(p.payoff for p in player.in_all_rounds())
-            avg_player_contribution = sum(p.contribution for p in player.in_all_rounds()) / len(player.in_all_rounds())
-            avg_total_contribution = sum(p.group.total_contribution for p in player.in_all_rounds()) / len(
-                player.in_all_rounds())
+            player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) if len(player.rich_in_all_rounds()) > 0 else c(0)
+            player_total_pay_poor = sum(p.payoff for p in player.poor_in_all_rounds()) if len(player.poor_in_all_rounds()) > 0 else c(0)
+            avg_player_contribution_rich = sum(p.contribution for p in player.rich_in_all_rounds()
+                    ) / len(player.rich_in_all_rounds()) if len(player.rich_in_all_rounds()) > 0 else c(0)
+
+            avg_player_contribution_poor = sum(p.contribution for p in player.poor_in_all_rounds()
+                    ) / len(player.poor_in_all_rounds()) if len(player.poor_in_all_rounds()) > 0 else c(0)
 
             series.append(dict(PlayerID=player_id,
                                Name=player_name,
                                TotalPayoff=player_total_pay,
-                               Contribution=avg_player_contribution,
-                               AvgTotalContribution=avg_total_contribution))
+                               TotalPayoffRich=player_total_pay_rich,
+                               TotalPayoffPoor=player_total_pay_poor,
+                               ContributionRich=avg_player_contribution_rich,
+                               ContributionPoor=avg_player_contribution_poor))
         cnt = len(series)
         if cnt > 0:
             av = dict(PlayerID=0,
                       Name='AVG',
                       TotalPayoff=round(sum(s['TotalPayoff'] for s in series) / cnt, 0),
-                      Contribution=round(sum(s['Contribution'] for s in series) / cnt, 1),
-                      AvgTotalContribution=round(sum(s['AvgTotalContribution'] for s in series) / cnt, 1))
+                      TotalPayoffRich=round(sum(s['TotalPayoffRich'] for s in series) / cnt, 0),
+                      TotalPayoffPoor=round(sum(s['TotalPayoffPoor'] for s in series) / cnt, 0),
+                      ContributionRich=round(sum(s['ContributionRich'] for s in series) / cnt, 1),
+                      ContributionPoor=round(sum(s['ContributionPoor'] for s in series) / cnt, 1))
             series.insert(0, av)
 
         return dict(
-            period_data=subsession_avg,
+            poor_data=subsession_poor_avg,
+            rich_data=subsession_rich_avg,
             game_data=series,
-            round_numbers=list(range(0, len(subsession_avg))))
+            round_numbers=list(range(0, len(subsession_poor_avg))))
 
 
 class Group(BaseGroup):
@@ -128,14 +153,26 @@ class Player(BasePlayer):
     def role(self):
         return {0: 'rich', 1: 'poor'}[self.id_in_group % 2]
 
-    # @working_endowment.setter
+    def rich_in_all_rounds(self):
+        list=[]
+        for p in self.in_all_rounds():
+            if p.role() == 'rich':
+                list.append(p)
+        return list
+
+    def poor_in_all_rounds(self):
+        list=[]
+        for p in self.in_all_rounds():
+            if p.role() == 'poor':
+                list.append(p)
+        return list
+
     def set_working_endowment(self):
         if self.role() == 'rich':
             self.working_endowment = Constants.rich_working_endowment
         else:
             self.working_endowment = Constants.poor_working_endowment
 
-    # @external_endowment.setter
     def set_external_endowment(self):
         if self.role() == 'rich':
             self.external_endowment = Constants.rich_external_endowment
