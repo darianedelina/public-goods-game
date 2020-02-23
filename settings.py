@@ -15,7 +15,7 @@ SESSION_CONFIGS = [
         name='public_goods_rich',
         display_name="Игра с общим благом для богатых и бедных",
         num_demo_participants=2,
-        app_sequence=['survey', 'public_goods_rich'],
+        app_sequence=['public_goods_rich'],
     ),
 ]
 

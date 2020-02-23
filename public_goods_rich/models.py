@@ -19,7 +19,7 @@ This is a one-period public goods game with 3 players.
 class Constants(BaseConstants):
     name_in_url = 'public_goods_rich'
     players_per_group = 2
-    num_rounds = 3
+    num_rounds = 2         # should be 2*(num_demo_participants - 1) for players_per_group = 2
 
     instructions_template = 'public_goods_rich/instructions.html'
     totalResult_template = 'public_goods_rich/adminReport.html'
@@ -36,10 +36,10 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    def get_active_players(self):
+    def get_active_players(self) -> list:
         return [p for p in self.get_players() if p.is_alive()]
 
-    def get_rich_players(self):
+    def get_rich_players(self) -> list:
         return [p for p in self.get_players() if p.role() == 'rich']
 
     def get_poor_players(self) -> list:
@@ -51,32 +51,44 @@ class Subsession(BaseSubsession):
             p.set_external_endowment()
 
     def do_my_shuffle(self):
-        newlist = [p for p in self.get_players() if p.is_alive()]
-        leftlist = [p for p in self.get_players() if not p.is_alive()]
-        pcount = len(newlist)
+        newlist = [p for p in self.get_players() if p.is_alive()]       # list of real players
+        leftlist = [p for p in self.get_players() if not p.is_alive()]  # list of bots
+        pcount = len(newlist)                           # amount of real players
         num_to_add = Constants.players_per_group - pcount % Constants.players_per_group
-        if num_to_add < Constants.players_per_group:
-            newlist += leftlist[:num_to_add]
-            leftlist = leftlist[num_to_add:]
-            pcount = len(newlist)
-        nums = random.SystemRandom().sample(range(pcount), pcount)
-        shufflelist = [newlist[i] for i in nums] + leftlist
-        gr_matrix = [shufflelist[i:i + Constants.players_per_group] for i in
-                     range(0, len(shufflelist), Constants.players_per_group)]
+        if num_to_add < Constants.players_per_group:    # if the number of real players is not completely divided by the number of groups
+            newlist += leftlist[:num_to_add]            # expand the list of real players to an integer number of groups adding bots to them
+            leftlist = leftlist[num_to_add:]            # remaining bots keep being in second list
+        shufflelist = newlist + leftlist                # list of players + bots
+        n = len(shufflelist)
+        ids = [i for i in range(1, n)]                  # list of all players ids except first one
+        k = self.round_number - 1
+        if k % 2 == 0:                                  # https://en.wikipedia.org/wiki/Round-robin_tournament
+            gr_matrix = [[shufflelist[0], shufflelist[ids[(n - 2 + (k // 2)) % (n - 1)]]]]
+            gr_matrix += [
+                [shufflelist[ids[(i - 1 + (k // 2)) % (n - 1)]], shufflelist[ids[(n - 2 - i + (k // 2)) % (n - 1)]]]
+                for i in range(1, n // 2)]
+        if k % 2 == 1:                                  # turn to the other side so that the players in the pair can switch roles
+            gr_matrix = [[shufflelist[ids[(n - 2 - (k // 2)) % (n - 1)]], shufflelist[0]]]
+            gr_matrix += [
+                [shufflelist[ids[(n - 2 - i - (k // 2)) % (n - 1)]], shufflelist[ids[(i - 1 - (k // 2)) % (n - 1)]]]
+                for i in range(1, n // 2)]
         self.set_group_matrix(gr_matrix)
+        # print(self.get_group_matrix())
         self.set_all_endowments()
 
     def vars_for_admin_report(self):
         subsession_poor_avg = ['contribution_avg_by_poor']
         subs: Subsession
         for subs in self.in_all_rounds():
-            avg_player_contribution = sum(p.contribution for p in subs.get_poor_players())/len(subs.get_poor_players())
+            avg_player_contribution = sum(p.contribution for p in subs.get_poor_players()) / len(
+                subs.get_poor_players())
             subsession_poor_avg.append(round(avg_player_contribution, 1))
 
         subsession_rich_avg = ['contribution_avg_by_rich']
         subs: Subsession
         for subs in self.in_all_rounds():
-            avg_player_contribution = sum(p.contribution for p in subs.get_rich_players())/len(subs.get_rich_players())
+            avg_player_contribution = sum(p.contribution for p in subs.get_rich_players()) / len(
+                subs.get_rich_players())
             subsession_rich_avg.append(round(avg_player_contribution, 1))
 
         series = []
@@ -84,13 +96,17 @@ class Subsession(BaseSubsession):
             player_id = player.participant.id_in_session
             player_name = player.participant.label
             player_total_pay = sum(p.payoff for p in player.in_all_rounds())
-            player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) if len(player.rich_in_all_rounds()) > 0 else c(0)
-            player_total_pay_poor = sum(p.payoff for p in player.poor_in_all_rounds()) if len(player.poor_in_all_rounds()) > 0 else c(0)
+            player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) \
+                if len(player.rich_in_all_rounds()) > 0 else c(0)
+            player_total_pay_poor = sum(p.payoff for p in player.poor_in_all_rounds()) \
+                if len(player.poor_in_all_rounds()) > 0 else c(0)
             avg_player_contribution_rich = sum(p.contribution for p in player.rich_in_all_rounds()
-                    ) / len(player.rich_in_all_rounds()) if len(player.rich_in_all_rounds()) > 0 else c(0)
+                                               ) / len(player.rich_in_all_rounds()) \
+                if len(player.rich_in_all_rounds()) > 0 else c(0)
 
             avg_player_contribution_poor = sum(p.contribution for p in player.poor_in_all_rounds()
-                    ) / len(player.poor_in_all_rounds()) if len(player.poor_in_all_rounds()) > 0 else c(0)
+                                               ) / len(player.poor_in_all_rounds()) \
+                if len(player.poor_in_all_rounds()) > 0 else c(0)
 
             series.append(dict(PlayerID=player_id,
                                Name=player_name,
@@ -154,14 +170,14 @@ class Player(BasePlayer):
         return {0: 'rich', 1: 'poor'}[self.id_in_group % 2]
 
     def rich_in_all_rounds(self):
-        list=[]
+        list = []
         for p in self.in_all_rounds():
             if p.role() == 'rich':
                 list.append(p)
         return list
 
     def poor_in_all_rounds(self):
-        list=[]
+        list = []
         for p in self.in_all_rounds():
             if p.role() == 'poor':
                 list.append(p)

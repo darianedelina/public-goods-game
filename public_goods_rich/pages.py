@@ -76,14 +76,6 @@ class Results(PageWithBot):
     """This page displays the earnings of each player"""
 
 
-class ShuffleWaitPage(WaitPage):
-    def after_all_players_arrive(self):
-        self.subsession.do_my_shuffle()
-
-    title_text = "Пожалуйста, подождите"
-    body_text = "Ожидайте пока Ваш оппонент примет решение."
-
-
 class TotalResult(PageWithBot):
     def vars_for_template(self):
         return self.subsession.vars_for_admin_report()
@@ -98,6 +90,5 @@ page_sequence = [
     Contribute,
     ResultsWaitPage,
     Results,
-    ShuffleWaitPage,
     TotalResult
 ]
