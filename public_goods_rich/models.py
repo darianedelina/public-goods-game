@@ -51,23 +51,23 @@ class Subsession(BaseSubsession):
             p.set_external_endowment()
 
     def do_my_shuffle(self):
-        newlist = [p for p in self.get_players() if p.is_alive()]       # list of real players
-        leftlist = [p for p in self.get_players() if not p.is_alive()]  # list of bots
-        pcount = len(newlist)                           # amount of real players
+        player_list = [p for p in self.get_players() if p.is_alive()]       # list of real players
+        bots_list = [p for p in self.get_players() if not p.is_alive()]     # list of bots
+        pcount = len(player_list)                                           # amount of real players
         num_to_add = Constants.players_per_group - pcount % Constants.players_per_group
-        if num_to_add < Constants.players_per_group:    # if the number of real players is not completely divided by the number of groups
-            newlist += leftlist[:num_to_add]            # expand the list of real players to an integer number of groups adding bots to them
-            leftlist = leftlist[num_to_add:]            # remaining bots keep being in second list
-        shufflelist = newlist + leftlist                # list of players + bots
+        if num_to_add < Constants.players_per_group:        # if the number of real players is not completely divided by the number of groups
+            player_list += bots_list[:num_to_add]           # expand the list of real players to an integer number of groups adding bots to them
+            bots_list = bots_list[num_to_add:]              # remaining bots keep being in second list
+        shufflelist = player_list + bots_list               # list of players + bots
         n = len(shufflelist)
-        ids = [i for i in range(1, n)]                  # list of all players ids except first one
+        ids = [i for i in range(1, n)]                      # list of all players ids except first one
         k = self.round_number - 1
-        if k % 2 == 0:                                  # https://en.wikipedia.org/wiki/Round-robin_tournament
+        if k % 2 == 0:                                      # https://en.wikipedia.org/wiki/Round-robin_tournament
             gr_matrix = [[shufflelist[0], shufflelist[ids[(n - 2 + (k // 2)) % (n - 1)]]]]
             gr_matrix += [
                 [shufflelist[ids[(i - 1 + (k // 2)) % (n - 1)]], shufflelist[ids[(n - 2 - i + (k // 2)) % (n - 1)]]]
                 for i in range(1, n // 2)]
-        if k % 2 == 1:                                  # turn to the other side so that the players in the pair can switch roles
+        if k % 2 == 1:                                      # turn to the other side so that the players in the pair can switch roles
             gr_matrix = [[shufflelist[ids[(n - 2 - (k // 2)) % (n - 1)]], shufflelist[0]]]
             gr_matrix += [
                 [shufflelist[ids[(n - 2 - i - (k // 2)) % (n - 1)]], shufflelist[ids[(i - 1 - (k // 2)) % (n - 1)]]]
