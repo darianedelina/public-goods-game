@@ -19,7 +19,7 @@ This is a one-period public goods game with 3 players.
 class Constants(BaseConstants):
     name_in_url = 'public_goods_rich'
     players_per_group = 2
-    num_rounds = 2         # should be 2*(num_demo_participants - 1) for players_per_group = 2
+    num_rounds = 2         # should be 2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
 
     instructions_template = 'public_goods_rich/instructions.html'
     totalResult_template = 'public_goods_rich/adminReport.html'

@@ -13,10 +13,10 @@
 
         <tr><td colspan="2"><hr/></td></tr>
         
-        <tr><td>Общий вклад:</td><td>{{ group.total_contribution }}</td></tr>
-
-        <tr><td>Порог:</td><td>{{ Constants.threshold }}</td></tr>
-
+        <tr><td>Общий вклад:</td><td>{{ group.total_contribution }} из необходимых {{ Constants.threshold }}</td></tr>
+        {% comment %}
+        <tr><td>Размер фонда для ремонта:</td><td>{{ Constants.threshold }}</td></tr>
+        {% endcomment %}
         <tr><td colspan="2"><hr/></td></tr>
 
         {% if group.total_contribution >= Constants.threshold %}
@@ -25,6 +25,8 @@
             <tr><td>К сожалению, вы не сумели набрать необходимую сумму для ремонта.</td></tr>
             {% if group.loss == 1 %}
                 <tr><td>Тем не менее, вам повезло, дамба выдержала!</td></tr>
+            {% else %}
+                <tr><td>Ваш дом был разрушен.</td></tr>
             {% endif %}
         {% endif %}
 
@@ -34,9 +36,11 @@
 
     </table>
     <p></p>
-
-    {% next_button %}
-
+        {% if subsession.round_number == Constants.num_rounds %}
+            <button class="otree-btn-next btn btn-primary">Финальные результаты</button>
+        {% else %}
+            <button class="otree-btn-next btn btn-primary">Следующий раунд</button>
+        {% endif %}
 
     {% include Constants.instructions_template %}
 
