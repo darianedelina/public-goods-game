@@ -12,16 +12,17 @@ from otree.api import (
 import random
 
 doc = """
-This is a one-period public goods game with 3 players.
+This is a one-period public goods game with 2 players.
 """
 
 
 class Constants(BaseConstants):
     name_in_url = 'public_goods_rich'
     players_per_group = 2
-    num_rounds = 2         # should be 2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
+    num_rounds = 2         # should be N*2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
 
     instructions_template = 'public_goods_rich/instructions.html'
+    instruction_short_template = 'public_goods_rich/instruction_short.html'
     totalResult_template = 'public_goods_rich/adminReport.html'
 
     rich_working_endowment = c(200)
@@ -162,6 +163,10 @@ class Player(BasePlayer):
 
     def contribution_max(self):
         return self.working_endowment
+
+    # def contribution_choices(self):
+    #     return [c(0), Constants.poor_working_endowment, Constants.rich_working_endowment] if self.role() == 'rich' \
+    #         else [c(0), Constants.poor_working_endowment]
 
     def is_alive(self):
         return not ((self.participant.label is None) or (self.participant.label == ""))

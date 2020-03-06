@@ -15,11 +15,14 @@
             <strong>бедный</strong>
         {% endif %}
     </p>
+    <p>
+        Размер фонда составляет {{Constants.threshold}}.
+    </p>
 
     {% formfield player.contribution label=contribution_label %}
 
     {% next_button %}
 
-    {% include Constants.instructions_template %}
+    {% include Constants.instruction_short_template %}
 
 {% endblock %}

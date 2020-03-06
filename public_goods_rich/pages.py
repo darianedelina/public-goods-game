@@ -53,7 +53,7 @@ class Contribute(PageWithBot):
 
     def vars_for_template(self):
         return dict(
-            contribution_label='Сколько Вы готовы вложить в общий проект (от 0 до {})?'.format(
+            contribution_label='Сколько Вы готовы вложить на ремонт дамбы (от 0 до {})?'.format(
                 self.player.working_endowment)
         )
 
