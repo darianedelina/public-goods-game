@@ -13,7 +13,7 @@
             Он рассчитывается следующим образом: очки, которые вы не потратили, остаются вам.
             Если жители собрали нужную сумму для ремонта, то дамба точно устоит, дома уцелеют.
             Если средства не собраны, и дамбу не починили, то дамба <strong>рухнет с вероятностью
-            {{Constants.probability_of_loss}}</strong>.<br>
+            {{probability_of_loss_this_group}}</strong>.<br>
             Состояние домов в городе определяет Множитель из формулы.
             Если дома остались целы, то Множитель = 1, а если дома разрушило - Множитель = 0.
         </p>
@@ -30,10 +30,10 @@
             При этом
             {% if player.role == 'rich' %}
             бедные жители имеют {{ Constants.poor_working_endowment }} для ремонта
-            и дом стоимостью {{ Constants.poor_external_endowment }}.
+            и дом стоимостью {{ poor_external_endowment_this_group }}.
             {% else %}
             богатые жители имеют {{ Constants.rich_working_endowment }} для ремонта
-            и дом стоимостью {{ Constants.rich_external_endowment }}.
+            и дом стоимостью {{ rich_external_endowment_this_group }}.
             {% endif %}
         </p>
     </div>

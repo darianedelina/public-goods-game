@@ -1,0 +1,14 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+    Вопросы
+{% endblock %}
+
+{% block content %}
+    {% formfields %}
+    <p>{% next_button %}</p>
+
+{% include Constants.instructions_template %}
+
+{% endblock %}
