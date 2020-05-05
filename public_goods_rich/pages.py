@@ -44,7 +44,7 @@ class StartWaitPage(WaitPage):
             # print(players_of_this_group)
             gr_matrix += self.subsession.do_my_shuffle(players_of_this_group)
         self.subsession.set_group_matrix(gr_matrix)
-        print(self.subsession.get_group_matrix())
+        # print(self.subsession.get_group_matrix())
         self.subsession.set_all_endowments()
 
 

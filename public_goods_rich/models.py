@@ -19,7 +19,7 @@ This is a one-period public goods game with 2 players.
 class Constants(BaseConstants):
     name_in_url = 'public_goods_rich'
     players_per_group = 2
-    num_rounds = 4         # should be N*2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
+    num_rounds = 10         # should be N*2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
 
     instructions_template = 'public_goods_rich/instructions.html'
     instruction_short_template = 'public_goods_rich/instruction_short.html'
@@ -68,6 +68,7 @@ class Subsession(BaseSubsession):
         player_list = [p for p in self.get_players() if p.is_alive()]  # list of real players
         bots_list = [p for p in self.get_players() if not p.is_alive()]  # list of bots
         pcount = len(player_list)  # amount of real players
+        random.shuffle(player_list)
         num_to_add = Constants.players_per_group - pcount % Constants.players_per_group
         if num_to_add < Constants.players_per_group:  # if the number of real players is not completely divided by the number of groups
             player_list += bots_list[:num_to_add]  # expand the list of real players to an integer number of groups adding bots to them
@@ -101,23 +102,24 @@ class Subsession(BaseSubsession):
 
     def vars_for_admin_report(self):
         subsession_poor_avg = ['contribution_avg_by_poor']
-        subs: Subsession
-        for subs in self.in_all_rounds():
-            avg_player_contribution = sum(p.contribution for p in subs.get_poor_players()) / len(
-                subs.get_poor_players())
-            subsession_poor_avg.append(round(avg_player_contribution, 1))
-
+        # subs: Subsession
+        # for subs in self.in_all_rounds():
+        #     avg_player_contribution = sum(p.contribution for p in subs.get_poor_players()) / len(
+        #         subs.get_poor_players())
+        #     subsession_poor_avg.append(round(avg_player_contribution, 1))
+        #
         subsession_rich_avg = ['contribution_avg_by_rich']
-        subs: Subsession
-        for subs in self.in_all_rounds():
-            avg_player_contribution = sum(p.contribution for p in subs.get_rich_players()) / len(
-                subs.get_rich_players())
-            subsession_rich_avg.append(round(avg_player_contribution, 1))
+        # subs: Subsession
+        # for subs in self.in_all_rounds():
+        #     avg_player_contribution = sum(p.contribution for p in subs.get_rich_players()) / len(
+        #         subs.get_rich_players())
+        #     subsession_rich_avg.append(round(avg_player_contribution, 1))
 
         series = []
         for player in self.get_players():
             player_id = player.participant.id_in_session
             player_name = player.participant.label
+            player_test_group = player.participant.vars['test_group']
             player_total_pay = sum(p.payoff for p in player.in_all_rounds())
             player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) \
                 if len(player.rich_in_all_rounds()) > 0 else c(0)
@@ -133,15 +135,18 @@ class Subsession(BaseSubsession):
 
             series.append(dict(PlayerID=player_id,
                                Name=player_name,
+                               TestGroup=player_test_group,
                                TotalPayoff=player_total_pay,
                                TotalPayoffRich=player_total_pay_rich,
                                TotalPayoffPoor=player_total_pay_poor,
                                ContributionRich=avg_player_contribution_rich,
                                ContributionPoor=avg_player_contribution_poor))
+        series = sorted(series, key=lambda dict: dict['TestGroup'])
         cnt = len(series)
         if cnt > 0:
             av = dict(PlayerID=0,
                       Name='AVG',
+                      TestGroup='',
                       TotalPayoff=round(sum(s['TotalPayoff'] for s in series) / cnt, 0),
                       TotalPayoffRich=round(sum(s['TotalPayoffRich'] for s in series) / cnt, 0),
                       TotalPayoffPoor=round(sum(s['TotalPayoffPoor'] for s in series) / cnt, 0),
