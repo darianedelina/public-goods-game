@@ -19,7 +19,7 @@ This is a one-period public goods game with 2 players.
 class Constants(BaseConstants):
     name_in_url = 'public_goods_rich'
     players_per_group = 2
-    num_rounds = 10         # should be N*2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
+    num_rounds = 20        # should be N*2*(SESSION_CONFIGS.num_demo_participants - 1) for players_per_group = 2
 
     instructions_template = 'public_goods_rich/instructions.html'
     instruction_short_template = 'public_goods_rich/instruction_short.html'
@@ -68,7 +68,8 @@ class Subsession(BaseSubsession):
         player_list = [p for p in self.get_players() if p.is_alive()]  # list of real players
         bots_list = [p for p in self.get_players() if not p.is_alive()]  # list of bots
         pcount = len(player_list)  # amount of real players
-        random.shuffle(player_list)
+        nums = random.SystemRandom().sample(range(pcount), pcount)
+        player_list = [player_list[i] for i in nums]
         num_to_add = Constants.players_per_group - pcount % Constants.players_per_group
         if num_to_add < Constants.players_per_group:  # if the number of real players is not completely divided by the number of groups
             player_list += bots_list[:num_to_add]  # expand the list of real players to an integer number of groups adding bots to them
@@ -100,65 +101,57 @@ class Subsession(BaseSubsession):
                 for i in range(1, n // 2)]
         return gr_matrix
 
-    def vars_for_admin_report(self):
-        subsession_poor_avg = ['contribution_avg_by_poor']
-        # subs: Subsession
-        # for subs in self.in_all_rounds():
-        #     avg_player_contribution = sum(p.contribution for p in subs.get_poor_players()) / len(
-        #         subs.get_poor_players())
-        #     subsession_poor_avg.append(round(avg_player_contribution, 1))
-        #
-        subsession_rich_avg = ['contribution_avg_by_rich']
-        # subs: Subsession
-        # for subs in self.in_all_rounds():
-        #     avg_player_contribution = sum(p.contribution for p in subs.get_rich_players()) / len(
-        #         subs.get_rich_players())
-        #     subsession_rich_avg.append(round(avg_player_contribution, 1))
-
+    def vars_for_group(self, test_group):
         series = []
         for player in self.get_players():
-            player_id = player.participant.id_in_session
-            player_name = player.participant.label
-            player_test_group = player.participant.vars['test_group']
-            player_total_pay = sum(p.payoff for p in player.in_all_rounds())
-            player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) \
-                if len(player.rich_in_all_rounds()) > 0 else c(0)
-            player_total_pay_poor = sum(p.payoff for p in player.poor_in_all_rounds()) \
-                if len(player.poor_in_all_rounds()) > 0 else c(0)
-            avg_player_contribution_rich = sum(p.contribution for p in player.rich_in_all_rounds()
-                                               ) / len(player.rich_in_all_rounds()) \
-                if len(player.rich_in_all_rounds()) > 0 else c(0)
+            if player.participant.vars['test_group'] == test_group:
+                player_name = player.participant.label
+                player_total_pay = sum(p.payoff for p in player.in_all_rounds())
+                player_total_pay_rich = sum(p.payoff for p in player.rich_in_all_rounds()) \
+                    if len(player.rich_in_all_rounds()) > 0 else c(0)
+                player_total_pay_poor = sum(p.payoff for p in player.poor_in_all_rounds()) \
+                    if len(player.poor_in_all_rounds()) > 0 else c(0)
+                avg_player_contribution_rich = sum(p.contribution for p in player.rich_in_all_rounds()
+                                                   ) / len(player.rich_in_all_rounds()) \
+                    if len(player.rich_in_all_rounds()) > 0 else c(0)
 
-            avg_player_contribution_poor = sum(p.contribution for p in player.poor_in_all_rounds()
-                                               ) / len(player.poor_in_all_rounds()) \
-                if len(player.poor_in_all_rounds()) > 0 else c(0)
+                avg_player_contribution_poor = sum(p.contribution for p in player.poor_in_all_rounds()
+                                                   ) / len(player.poor_in_all_rounds()) \
+                    if len(player.poor_in_all_rounds()) > 0 else c(0)
 
-            series.append(dict(PlayerID=player_id,
-                               Name=player_name,
-                               TestGroup=player_test_group,
-                               TotalPayoff=player_total_pay,
-                               TotalPayoffRich=player_total_pay_rich,
-                               TotalPayoffPoor=player_total_pay_poor,
-                               ContributionRich=avg_player_contribution_rich,
-                               ContributionPoor=avg_player_contribution_poor))
-        series = sorted(series, key=lambda dict: dict['TestGroup'])
-        cnt = len(series)
+                series.append(dict(Name=player_name,
+                                   MoneyPayoff=0,
+                                   TotalPayoff=player_total_pay,
+                                   # TotalPayoffRich=player_total_pay_rich,
+                                   # TotalPayoffPoor=player_total_pay_poor,
+                                   # ContributionRich=avg_player_contribution_rich,
+                                   # ContributionPoor=avg_player_contribution_poor
+                                   ))
+        return series
+
+    def show_my_results(self, my_group_list, current_player):
+        my_player = list(filter(lambda dict: dict['Name'] == current_player.label, my_group_list))
+        my_player[0].update(dict(MoneyPayoff=count_money_payoff(my_player[0]['TotalPayoff'], my_group_list)))
+        cnt = len(my_group_list)
         if cnt > 0:
-            av = dict(PlayerID=0,
-                      Name='AVG',
-                      TestGroup='',
-                      TotalPayoff=round(sum(s['TotalPayoff'] for s in series) / cnt, 0),
-                      TotalPayoffRich=round(sum(s['TotalPayoffRich'] for s in series) / cnt, 0),
-                      TotalPayoffPoor=round(sum(s['TotalPayoffPoor'] for s in series) / cnt, 0),
-                      ContributionRich=round(sum(s['ContributionRich'] for s in series) / cnt, 1),
-                      ContributionPoor=round(sum(s['ContributionPoor'] for s in series) / cnt, 1))
-            series.insert(0, av)
-
+            avg = dict(Name='AVG',
+                      MoneyPayoff=0,
+                      TotalPayoff=round(sum(s['TotalPayoff'] for s in my_group_list) / cnt, 0),
+                      # TotalPayoffRich=round(sum(s['TotalPayoffRich'] for s in my_group_list) / cnt, 0),
+                      # TotalPayoffPoor=round(sum(s['TotalPayoffPoor'] for s in my_group_list) / cnt, 0),
+                      # ContributionRich=round(sum(s['ContributionRich'] for s in my_group_list) / cnt, 1),
+                      # ContributionPoor=round(sum(s['ContributionPoor'] for s in my_group_list) / cnt, 1)
+                       )
+            my_player.insert(0, avg)
         return dict(
-            poor_data=subsession_poor_avg,
-            rich_data=subsession_rich_avg,
-            game_data=series,
-            round_numbers=list(range(0, len(subsession_poor_avg))))
+            game_data=my_player,
+        )
+
+
+def count_money_payoff(payoff, group_list) -> str:
+    avg_payoff_in_group = sum(g['TotalPayoff'] for g in group_list) / len(group_list)
+    money_payoff = (payoff * 500 / avg_payoff_in_group).__float__()
+    return "{} рублей".format(money_payoff)
 
 
 class Group(BaseGroup):
@@ -189,9 +182,6 @@ class Player(BasePlayer):
     )
 
     test_group = models.StringField()
-
-    def get_test_group(self) -> str:
-        return self.test_group
 
     def set_test_group(self, str):
         self.test_group = str
@@ -236,7 +226,7 @@ class Player(BasePlayer):
             self.external_endowment = Constants.poor_external_endowment.get(self.participant.vars['test_group'], 100)
 
     q1 = models.IntegerField(
-        label='Сколько вам и второму игроку нужно вложить, чтобы дамба не сломалась?')
+        label='Какова стоимость ремонта дамбы?')
 
     def q1_error_message(self, value):
         if value != Constants.threshold:

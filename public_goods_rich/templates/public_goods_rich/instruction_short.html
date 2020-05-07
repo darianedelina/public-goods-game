@@ -24,8 +24,9 @@
             {% else %}
             <strong>бедный</strong>
             {% endif %}
-            житель, это означает, что вы имеете <strong>{{ player.working_endowment }}</strong>,
-            которые можете потратить на ремонт дамбы, стоимость вашего дома <strong>{{ player.external_endowment }}</strong>.
+            житель. <br>
+            Это означает, что вы имеете <strong>{{ player.working_endowment }}</strong>,
+            которые можете потратить на ремонт дамбы, стоимость вашего дома <strong>{{ player.external_endowment }}</strong>.<br>
 
             При этом
             {% if player.role == 'rich' %}

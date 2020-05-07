@@ -32,7 +32,7 @@ class StartWaitPage(WaitPage):
     wait_for_all_groups = True
 
     title_text = "Пожалуйста, подождите"
-    body_text = "Ожидайте пока Ваш оппонент примет решение."
+    body_text = "Ожидайте, пока все участники эксперимента заполнят анкету."
 
     def after_all_players_arrive(self):
         if self.round_number == 1:
@@ -62,7 +62,7 @@ class Introduction(PageWithBot):
         )
 
 
-class Question(PageWithBot):
+class ControlQuestions(PageWithBot):
     form_model = 'player'
     form_fields = ['q1', 'q3', 'q2', 'q4', 'q5']
 
@@ -120,7 +120,10 @@ class Results(PageWithBot):
 
 class TotalResult(PageWithBot):
     def vars_for_template(self):
-        return self.subsession.vars_for_admin_report()
+        return self.subsession.show_my_results(
+            self.subsession.vars_for_group(self.participant.vars['test_group']),
+            self.participant
+        )
 
     def is_displayed(self):
         return self.round_number == Constants.num_rounds
@@ -129,7 +132,7 @@ class TotalResult(PageWithBot):
 page_sequence = [
     StartWaitPage,
     Introduction,
-    Question,
+    ControlQuestions,
     Contribute,
     ResultsWaitPage,
     Results,

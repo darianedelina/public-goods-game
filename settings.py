@@ -14,7 +14,7 @@ SESSION_CONFIGS = [
     dict(
         name='public_goods_rich',
         display_name="Игра с общим благом для богатых и бедных",
-        num_demo_participants=6,
+        num_demo_participants=4,
         app_sequence=['survey', 'public_goods_rich'],
     ),
 ]
@@ -24,7 +24,7 @@ SESSION_CONFIGS = [
 LANGUAGE_CODE = 'ru'
 
 # e.g. EUR, GBP, CNY, JPY
-REAL_WORLD_CURRENCY_CODE = 'USD'
+REAL_WORLD_CURRENCY_CODE = 'RUB'
 USE_POINTS = True
 
 ROOMS = [

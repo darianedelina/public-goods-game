@@ -1,28 +1,4 @@
 
-<!--<table class="table">-->
-<!--    <thead>-->
-<!--        <tr>-->
-<!--            {% for num in round_numbers %}-->
-<!--                {% if num == 0 %}-->
-<!--                    <th>round</th>-->
-<!--                {% else %}-->
-<!--                    <th>{{ num }}</th>-->
-<!--                {% endif %}-->
-<!--            {% endfor %}-->
-<!--        </tr>-->
-<!--    </thead>-->
-<!--     <tbody>-->
-<!--      <tr>-->
-<!--            {% for dat in poor_data %}-->
-<!--                <td>{{ dat }}</td>-->
-<!--            {% endfor %}-->
-<!--      </tr>-->
-<!--      <tr>-->
-<!--            {% for dat in rich_data %}-->
-<!--                <td>{{ dat }}</td>-->
-<!--            {% endfor %}-->
-<!--      </tr>-->
-<!--</table>-->
 
 <table class="table">
     <thead>
@@ -35,7 +11,7 @@
      <tbody>
         {% for field in game_data %}
 
-            {% if field.PlayerID == 0 %}
+            {% if field.Name == 'AVG' %}
             <tr style="background-color: #666666;color: #ffffff;">
                 {% for dat in field.values %}
                     <td>{{ dat }}</td>
